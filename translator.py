@@ -48,6 +48,9 @@ from langchain_core.output_parsers import StrOutputParser
 output_parser = StrOutputParser()
 trivial_chain = prompt | llm | output_parser
 chat_chain = chat_prompt | llm | output_parser
+
+qa_prompt = PromptTemplate.from_template("""{question}. If you don't know, just tell me that, DO NOT try to make it up""")
+qa_chain = qa_prompt | llm | output_parser
 # ans = trivial_chain.invoke({"input": "There is no way (short of OCR) to extract text from these files."})
 # print(ans + "\n---")
 # ans = trivial_chain.invoke({"input": "What is your glorious purpose?"})
@@ -70,6 +73,11 @@ add_routes(
     app,
     chat_chain,
     path="/chainv1",
+)
+add_routes(
+    app,
+    qa_chain,
+    path="/qa",
 )
 
 if __name__ == "__main__":
