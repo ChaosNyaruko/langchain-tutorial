@@ -21,7 +21,8 @@ from langchain_core.messages import BaseMessage
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import MessagesPlaceholder
-llm = Ollama(model="llama3", temperature=0)
+# llm = Ollama(model="llama3.1", temperature=0.1)
+llm = Ollama(model="llama3.1", temperature=0.0)
 # prompt = ChatPromptTemplate.from_messages([
 #     ("user", "{input}"),
 #     ("user", "Given the above English text, translate them into Simplified Chinese please. NOTE: This sentence is NOT included.")
@@ -85,4 +86,4 @@ if __name__ == "__main__":
     # print(StrOutputParser().output_schema().schema())
     import uvicorn
 
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
