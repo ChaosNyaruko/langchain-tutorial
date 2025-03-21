@@ -25,7 +25,7 @@ llm_mistral = Ollama(model="mistral")
 llm_llama31 = Ollama(model="llama3.1")
 llm_llama3 = Ollama(model="llama3")
 llm_phi4 = Ollama(model="phi4")
-llm_qwen = Ollama(model="qwen:14b")
+llm_qwen = Ollama(model="qwen:14b", temperature=0.1)
 llm_ds = Ollama(model="deepseek-r1:8b")
 # prompt = ChatPromptTemplate.from_messages([
 #     ("user", "{input}"),
@@ -57,9 +57,13 @@ qa_chain = qa_prompt | llm_mistral | output_parser
 # ans = trivial_chain.invoke({"input": """请你给我讲一个笑话"""})
 # print(ans + "\n---")
 
-prompt_ch = PromptTemplate.from_template("""你是一个人类语言学专家。现在有一个翻译任务，如果原始文本是中文的，请把它翻译成英文，如果是其他的，都翻译成中文。最好能以信达雅的方式进行翻译，但不要曲解原义。你将要翻译的文本是: {question}
+prompt_ch = PromptTemplate.from_template("""你是一个人类语言学专家。现在有一个翻译任务，如果原始文本是中文的，请把它翻译成英文，如果是其他的，都翻译成中文。最好能以信达雅的方式进行翻译，但不要曲解原义。你将要翻译的文本是: 
+>>>
+{question}
+<<<
 """)
-ds_chain = prompt_ch | llm_qwen | output_parser
+ds_chain = prompt_ch | llm_ds | output_parser
+qwen_chain = prompt_ch | llm_qwen | output_parser
 app = FastAPI(
   title="LangChain Server",
   version="1.0",
@@ -86,6 +90,11 @@ add_routes(
     app,
     ds_chain,
     path="/ds",
+)
+add_routes(
+    app,
+    qwen_chain,
+    path="/qwen",
 )
 
 if __name__ == "__main__":
