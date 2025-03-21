@@ -21,8 +21,9 @@ from langchain_core.messages import BaseMessage
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import MessagesPlaceholder
-# llm = Ollama(model="llama3.1", temperature=0.1)
-llm = Ollama(model="llama3.1", temperature=0.0)
+llm_mistral = Ollama(model="mistral")
+llm_llama = Ollama(model="llama3.1")
+llm_ds = Ollama(model="deepseek-r1:8b")
 # prompt = ChatPromptTemplate.from_messages([
 #     ("user", "{input}"),
 #     ("user", "Given the above English text, translate them into Simplified Chinese please. NOTE: This sentence is NOT included.")
@@ -36,28 +37,26 @@ If possible,  some cultural or contextual adjustments can be applied, to make it
 chat_prompt= ChatPromptTemplate.from_messages(
     [("system", system_template), ("user", "我的文本 {text}")]
 )
-prompt = PromptTemplate.from_template("""Please translate some text. If the original text is in English, translate info Simplified Chinese, otherwise, translate into English. The output should include:
-1. The original text and its language.
-2. The target text and its language.
-If possible,  some cultural or contextual adjustments can be applied, to make it more idiomatic.
+prompt = PromptTemplate.from_template("""You are a language expert. Now I have some translations tasks. If the original text is given in Chinese, then translate into English, otherwise translate into Chinese. Please make your result idiomatic. The original text is {question}""")
 
-ORIGINAL TEXT:
-{input}
-""")
 
 from langchain_core.output_parsers import StrOutputParser
 output_parser = StrOutputParser()
-trivial_chain = prompt | llm | output_parser
-chat_chain = chat_prompt | llm | output_parser
+trivial_chain = prompt | llm_llama | output_parser
+chat_chain = chat_prompt | llm_mistral | output_parser
 
 qa_prompt = PromptTemplate.from_template("""{question}. If you don't know, just tell me that, DO NOT try to make it up""")
-qa_chain = qa_prompt | llm | output_parser
+qa_chain = qa_prompt | llm_mistral | output_parser
 # ans = trivial_chain.invoke({"input": "There is no way (short of OCR) to extract text from these files."})
 # print(ans + "\n---")
 # ans = trivial_chain.invoke({"input": "What is your glorious purpose?"})
 # print(ans + "\n---")
 # ans = trivial_chain.invoke({"input": """请你给我讲一个笑话"""})
 # print(ans + "\n---")
+
+prompt_ch = PromptTemplate.from_template("""你是一个人类语言学专家。现在有一个翻译任务，如果原始文本是中文的，请把它翻译成英文，如果是其他的，都翻译成中文。最好能以信达雅的方式进行翻译，但不要曲解原义。你将要翻译的文本是: {question}
+""")
+ds_chain = prompt_ch | llm_ds | output_parser
 app = FastAPI(
   title="LangChain Server",
   version="1.0",
@@ -79,6 +78,11 @@ add_routes(
     app,
     qa_chain,
     path="/qa",
+)
+add_routes(
+    app,
+    ds_chain,
+    path="/ds",
 )
 
 if __name__ == "__main__":
