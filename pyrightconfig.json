@@ -1,11 +1,9 @@
 {
   "include": [
     "src",
-    "~/miniconda3/lib/python3.12"
   ],
-  "venvPath": [
-    "~/miniconda3/lib/python3.12"
-  ],
+    "venv": "langchain",
+  "venvPath":  "/Users/bill/miniconda3/envs/",
 
   "exclude": [
     "**/node_modules",
