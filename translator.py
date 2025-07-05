@@ -24,6 +24,7 @@ from langchain_core.prompts import MessagesPlaceholder
 llm_mistral = Ollama(model="mistral")
 llm_llama31 = Ollama(model="llama3.1")
 llm_llama3 = Ollama(model="llama3")
+llm_llama2 = Ollama(model="llama2")
 llm_phi4 = Ollama(model="phi4")
 llm_qwen = Ollama(model="qwen:14b", temperature=0.1)
 llm_ds = Ollama(model="deepseek-r1:8b")
@@ -48,8 +49,16 @@ output_parser = StrOutputParser()
 trivial_chain = prompt | llm_phi4 | output_parser
 chat_chain = chat_prompt | llm_mistral | output_parser
 
-qa_prompt = PromptTemplate.from_template("""{question}. If you don't know, just tell me that, DO NOT try to make it up""")
-qa_chain = qa_prompt | llm_mistral | output_parser
+qa_prompt_no_make_up = PromptTemplate.from_template("""{question}. If you don't know, just tell me that, DO NOT try to make it up""")
+
+qa_prompt_plain = PromptTemplate.from_template("""{question}""")
+
+qa_chain = qa_prompt_plain | llm_llama2 | output_parser
+
+qa_chain_llama2 = qa_prompt_plain | llm_llama2 | output_parser
+qa_chain_llama3 = qa_prompt_plain | llm_llama3 | output_parser
+qa_chain_llama3_nomakeup = qa_prompt_no_make_up | llm_llama3 | output_parser
+qa_chain_qwen = qa_prompt_plain | llm_qwen | output_parser
 # ans = trivial_chain.invoke({"input": "There is no way (short of OCR) to extract text from these files."})
 # print(ans + "\n---")
 # ans = trivial_chain.invoke({"input": "What is your glorious purpose?"})
@@ -80,6 +89,26 @@ add_routes(
     app,
     chat_chain,
     path="/chainv1",
+)
+add_routes(
+    app,
+    qa_chain_llama2,
+    path="/qallama2",
+)
+add_routes(
+    app,
+    qa_chain_llama3,
+    path="/qallama3",
+)
+add_routes(
+    app,
+    qa_chain_llama3_nomakeup,
+    path="/qallama3_nomakeup",
+)
+add_routes(
+    app,
+    qa_chain_qwen,
+    path="/qaqwen",
 )
 add_routes(
     app,
